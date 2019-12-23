@@ -1,0 +1,13 @@
+name: mnist
+dependencies:
+  - numpy
+  - pandas
+  - math
+  - os
+  - glob
+  - __future__
+  - IPython
+  - matplotlib
+  - seaborn
+  - sklearn
+  - tensorflow
