@@ -2,10 +2,11 @@ name: mnist
 channels:
   - anaconda
   - defaults
-  - PyTorch
+  - pytorch
 dependencies:
   - numpy
   - pandas
-  - torch
+  - pytorch
+  - torchvision
   - pip:
       - sklearn
