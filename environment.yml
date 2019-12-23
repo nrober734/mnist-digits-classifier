@@ -2,3 +2,6 @@ name: mnist
 dependencies:
   - numpy
   - pandas
+  - pytorch
+  - pip:
+      - sklearn
