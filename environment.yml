@@ -1,4 +1,8 @@
 name: mnist
+channels:
+  - anaconda
+  - defaults
+  - PyTorch
 dependencies:
   - numpy
   - pandas
