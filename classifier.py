@@ -99,7 +99,7 @@ test_load = datasets.MNIST("", train=False, download=True, transform=transforms.
 trainset = torch.utils.data.DataLoader(train_load, batch_size=10, shuffle=True)
 testset = torch.utils.data.DataLoader(test_load, batch_size=10, shuffle=True)
 
-for epoch in range(0,3):
+for epoch in range(0, 3):
     print(f"Epoch: {epoch}")
 
     train(epoch, trainset)
