@@ -1,9 +1,11 @@
 import torch
-from torchvision import transforms, datasets
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+
+from torch.utils.tensorboard import SummaryWriter
 from torch.autograd import Variable
+from torchvision import transforms, datasets
 
 
 class ConvNet(nn.Module):
@@ -13,18 +15,18 @@ class ConvNet(nn.Module):
         self.conv1 = nn.Conv2d(1, 10, 5)
         self.conv2 = nn.Conv2d(10, 20, 5)
         self.dropout = nn.Dropout2d()
-        self.fc1 = nn.Linear(320,50)
-        self.fc2 = nn.Linear(50,10)
+        self.fc1 = nn.Linear(320, 50)
+        self.fc2 = nn.Linear(50, 10)
 
     def forward(self, x):
         x = F.relu(F.max_pool2d(self.conv1(x), 2))
         x = F.relu(F.max_pool2d(self.dropout(self.conv2(x)), 2))
-        x = x.view(-1,320)
+        x = x.view(-1, 320)
         x = F.relu(self.fc1(x))
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
 
-        return F.log_softmax(x,dim=1)
+        return F.log_softmax(x, dim=1)
 
 
 classify = ConvNet()
@@ -35,7 +37,8 @@ wins = []
 
 
 def train (epoch, trainer):
-    # stuff
+
+
     classify.train()
 
     for batch_id, (data, labels) in enumerate(trainer):
@@ -45,14 +48,17 @@ def train (epoch, trainer):
         optimizer.zero_grad()
         preds = classify(data)
         loss = F.nll_loss(preds,target)
-        #print(loss.data[0])
         loss.backward()
-        losses.append(loss.item())
 
+        losses.append(loss.item())
         optimizer.step()
 
         if batch_id % 1000 == 0:
             print(loss.item())
+
+    average_epoch_loss = sum(losses) / len(losses)
+
+    return average_epoch_loss
 
 
 def test(epoch, tester):
@@ -62,7 +68,7 @@ def test(epoch, tester):
         test_loss = 0
         win_count = 0
 
-        for data,target in tester:
+        for data, target in tester:
             data = Variable(data)
             target = Variable(target)
 
@@ -80,6 +86,8 @@ def test(epoch, tester):
 
         print(f"Average loss: {test_loss} ...... Average Correct: {win_perc}")
 
+    return win_perc
+
 
 train_load = datasets.MNIST("", train=True, download=True, transform=transforms.Compose([transforms.ToTensor()]))
 test_load = datasets.MNIST("", train=False, download=True, transform=transforms.Compose([transforms.ToTensor()]))
@@ -88,16 +96,18 @@ test_load = datasets.MNIST("", train=False, download=True, transform=transforms.
 trainset = torch.utils.data.DataLoader(train_load, batch_size=10, shuffle=True)
 testset = torch.utils.data.DataLoader(test_load, batch_size=10, shuffle=True)
 
-for epoch in range(0, 3):
+writer = SummaryWriter()
+
+for epoch in range(0, 10):
     print(f"Epoch: {epoch}")
 
-    train(epoch, trainset)
-    test(epoch, testset)
+    epoch_loss = train(epoch, trainset)
+    accuracy = test(epoch, testset)
 
+    print(f'Epoch loss: {epoch_loss}')
+    print(f'Accuracy: {accuracy}')
 
+    writer.add_scalar('Epoch Loss', epoch_loss, epoch)
+    writer.add_scalar('Epoch Accuracy', accuracy, epoch)
 
-
-
-
-
-
+writer.close()
