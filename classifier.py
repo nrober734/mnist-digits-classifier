@@ -1,23 +1,11 @@
 from __future__ import print_function
 
-import glob
-import math
-import os
-from IPython import display
-import matplotlib
-import numpy as np
-import pandas as pd
-import seaborn as sb
-import sklearn
-
 import torch
-import torchvision
 from torchvision import transforms, datasets
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.autograd import Variable
-
 
 
 class ConvNet(nn.Module):
@@ -30,7 +18,6 @@ class ConvNet(nn.Module):
         self.fc1 = nn.Linear(320,50)
         self.fc2 = nn.Linear(50,10)
 
-
     def forward(self, x):
         x = F.relu(F.max_pool2d(self.conv1(x), 2))
         x = F.relu(F.max_pool2d(self.dropout(self.conv2(x)), 2))
@@ -41,11 +28,13 @@ class ConvNet(nn.Module):
 
         return F.log_softmax(x,dim=1)
 
+
 classify = ConvNet()
 optimizer = optim.SGD(classify.parameters(), lr=0.01, momentum=0.5)
 
 losses = []
 wins = []
+
 
 def train (epoch, trainer):
     # stuff
@@ -66,6 +55,7 @@ def train (epoch, trainer):
 
         if batch_id % 1000 == 0:
             print(loss.item())
+
 
 def test(epoch, tester):
     with torch.no_grad():
@@ -91,6 +81,7 @@ def test(epoch, tester):
         wins.append(win_perc)
 
         print(f"Average loss: {test_loss} ...... Average Correct: {win_perc}")
+
 
 train_load = datasets.MNIST("", train=True, download=True, transform=transforms.Compose([transforms.ToTensor()]))
 test_load = datasets.MNIST("", train=False, download=True, transform=transforms.Compose([transforms.ToTensor()]))
