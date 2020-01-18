@@ -105,3 +105,4 @@ venv.bak/
 
 MNIST
 runs
+saved_model

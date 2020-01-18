@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -29,8 +30,8 @@ class ConvNet(nn.Module):
         return F.log_softmax(x, dim=1)
 
 
-classify = ConvNet()
-optimizer = optim.SGD(classify.parameters(), lr=0.01, momentum=0.5)
+model = ConvNet()
+optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
 
 losses = []
 wins = []
@@ -38,15 +39,14 @@ wins = []
 
 def train (epoch, trainer):
 
-
-    classify.train()
+    model.train()
 
     for batch_id, (data, labels) in enumerate(trainer):
         data = Variable(data)
         target = Variable(labels)
 
         optimizer.zero_grad()
-        preds = classify(data)
+        preds = model(data)
         loss = F.nll_loss(preds,target)
         loss.backward()
 
@@ -63,7 +63,7 @@ def train (epoch, trainer):
 
 def test(epoch, tester):
     with torch.no_grad():
-        classify.eval()
+        model.eval()
 
         test_loss = 0
         win_count = 0
@@ -72,7 +72,7 @@ def test(epoch, tester):
             data = Variable(data)
             target = Variable(target)
 
-            out = classify(data)
+            out = model(data)
             test_loss += F.nll_loss(out, target).item()
             #print(test_loss)
             pred = out.data.max(1)[1]
@@ -97,6 +97,10 @@ trainset = torch.utils.data.DataLoader(train_load, batch_size=10, shuffle=True)
 testset = torch.utils.data.DataLoader(test_load, batch_size=10, shuffle=True)
 
 writer = SummaryWriter()
+model_save_path = 'saved_model'
+
+if not os.path.exists(model_save_path):
+    os.mkdir(model_save_path)
 
 for epoch in range(0, 10):
     print(f"Epoch: {epoch}")
@@ -109,5 +113,7 @@ for epoch in range(0, 10):
 
     writer.add_scalar('Epoch Loss', epoch_loss, epoch)
     writer.add_scalar('Epoch Accuracy', accuracy, epoch)
+
+    torch.save(model.state_dict(), os.path.join(model_save_path, f'model_checkpoint_{epoch}'))
 
 writer.close()
